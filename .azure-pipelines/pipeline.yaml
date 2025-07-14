@@ -1,0 +1,28 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  KUSTOMIZE_BASE_DIR: "deploy/kubernetes/base"
+
+stages:
+- stage: Deploy
+  jobs:
+  - job: DeployToAKS
+    steps:
+    - checkout: self
+
+    - task: Kubernetes@1
+      displayName: 'Deploy with Kustomize'
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: 'aks conn'
+        namespace: default
+        command: apply
+        useConfigurationFile: true
+        configuration: |
+          kustomize build $(KUSTOMIZE_BASE_DIR)
